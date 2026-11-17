@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0d12">
+<title>A Trilha do Corretor</title>
+<link rel="stylesheet" href="/estilo.css">
+<style>
+  body { padding-bottom: 76px; }
+  .topo {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; background: rgba(11,13,18,.95); border-bottom: 1px solid var(--linha);
+  }
+  .topo .nome { font-weight: 700; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .topo .pts { font-variant-numeric: tabular-nums; color: var(--ambar); font-weight: 700; }
+  .topo .pos { color: var(--suave); font-size: 13px; }
+  main { padding: 16px 14px; max-width: 560px; margin: 0 auto; }
+  h1 { font-family: var(--serif); font-weight: normal; font-size: 28px; margin: 6px 0 4px; }
+  h2 { font-family: var(--serif); font-weight: normal; font-size: 22px; margin: 0 0 8px; }
+  .sub { color: var(--suave); margin: 0 0 18px; }
+  .entrar { padding-top: 10vh; text-align: center; }
+  .entrar input {
+    width: 100%; padding: 14px 16px; border-radius: 10px; border: 1px solid var(--linha);
+    background: var(--fundo2); color: var(--texto); font-size: 18px; margin: 18px 0 12px;
+  }
+  .btn {
+    width: 100%; padding: 15px; border-radius: 10px; border: 0;
+    background: var(--vermelho); color: #fff; font-weight: 700; font-size: 17px;
+  }
+  .btn:disabled { opacity: .5; }
+  .erro { color: #ff8a95; min-height: 22px; margin-top: 8px; }
+  .cartao { background: var(--fundo2); border: 1px solid var(--linha); border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+  .local { display: flex; align-items: center; gap: 10px; color: var(--suave); font-size: 14px; margin-bottom: 12px; }
+  .local b { color: var(--texto); }
+  .barra { height: 6px; background: var(--linha); border-radius: 3px; overflow: hidden; margin: 6px 0 14px; }
+  .barra > div { height: 100%; background: var(--ambar); transition: width 1s linear; }
+  .tempo { display: flex; justify-content: space-between; font-size: 13px; color: var(--suave); }
+  .pergunta { padding: 18px 16px 16px; margin-bottom: 14px; font-size: 16.5px; line-height: 1.5; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+  .pergunta .num { font-family: var(--mono); }
+  .pergunta .num { font-weight: bold; color: var(--vermelho); display: block; margin-bottom: 6px; font-size: 13px; letter-spacing: .5px; }
+  .opcao {
+    display: flex; gap: 12px; align-items: flex-start; text-align: left; width: 100%;
+    padding: 14px; margin-bottom: 10px; border-radius: 10px;
+    border: 1px solid var(--linha); background: var(--fundo2); color: var(--texto); font-size: 15.5px; line-height: 1.35;
+  }
+  .opcao .letra {
+    flex: 0 0 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--linha); font-weight: 700; font-size: 14px;
+  }
+  .opcao:active { border-color: var(--ambar); }
+  .opcao.escolhida { border-color: var(--ambar); background: #2a2414; }
+  .opcao:disabled { opacity: .6; }
+  .aviso { padding: 12px 14px; border-radius: 10px; margin-bottom: 14px; font-size: 15px; }
+  .aviso.ok { background: rgba(63,179,127,.15); border: 1px solid rgba(63,179,127,.5); }
+  .aviso.nao { background: rgba(214,40,57,.12); border: 1px solid rgba(214,40,57,.5); }
+  .grande { text-align: center; padding: 26px 16px; }
+  .grande .icone { font-size: 46px; margin-bottom: 8px; }
+  .grande h2 { font-size: 24px; }
+  .grande p { color: var(--suave); margin: 6px 0 0; font-size: 16px; line-height: 1.4; }
+  .certo h2 { color: #7be0b0; }
+  .errado h2 { color: #ff8a95; }
+  .gabarito { font-size: 14.5px; line-height: 1.4; }
+  .gabarito .item { padding: 10px 0; border-top: 1px solid var(--linha); }
+  .gabarito .item:first-child { border-top: 0; }
+  .gabarito .rot { font-size: 12px; color: var(--suave); text-transform: uppercase; letter-spacing: .5px; }
+  .gabarito .sua { color: #ff8a95; }
+  .gabarito .cer { color: #7be0b0; }
+  .suspeito {
+    width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 10px; text-align: left;
+    border: 1px solid var(--linha); background: var(--fundo2); color: var(--texto); font-size: 17px;
+  }
+  .suspeito.escolhido { border-color: var(--vermelho); background: #2a1216; }
+  .rodape {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 6;
+    display: flex; gap: 10px; padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+    background: rgba(11,13,18,.97); border-top: 1px solid var(--linha);
+  }
+  .rodape button { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--linha); background: var(--fundo2); color: var(--texto); font-weight: 600; }
+  .relogio-mini { flex: 0 0 auto !important; color: var(--ambar) !important; font-variant-numeric: tabular-nums; }
+  .caderno { position: fixed; inset: 0; z-index: 10; background: var(--fundo); overflow: auto; padding: 16px 14px 90px; }
+  .caderno .fala { padding: 12px 0; border-top: 1px solid var(--linha); font-size: 15px; line-height: 1.45; }
+  .caderno .fala small { color: var(--suave); display: block; margin-bottom: 3px; }
+  .caderno .fechar { position: fixed; bottom: 14px; left: 14px; right: 14px; }
+  .conexao { position: fixed; top: 0; left: 0; right: 0; z-index: 20; background: var(--ambar); color: #000; text-align: center; font-size: 13px; padding: 4px; }
+</style>
+</head>
+<body>
+<div class="conexao oculto" id="conexao">Reconectando...</div>
+
+<div class="topo oculto" id="topo">
+  <span class="selo" style="width:30px;height:30px;font-size:14px">C</span>
+  <span class="nome" id="tNome"></span>
+  <span class="pos" id="tPos"></span>
+  <span class="pts" id="tPts"></span>
+</div>
+
+<main id="tela"></main>
+
+<div class="rodape oculto" id="rodape">
+  <button id="bCaderno">Caderno de pistas</button>
+  <button class="relogio-mini" id="bRelogio" title="Fôlego do professor">⏱ --</button>
+</div>
+
+<div class="caderno oculto" id="caderno">
+  <h2>Caderno de pistas</h2>
+  <p class="sub">O que cada pessoa disse ao longo da trilha. Use para descobrir quem é o Corretor.</p>
+  <div id="cadLista"></div>
+  <button class="btn fechar" id="bFecharCad">Voltar ao jogo</button>
+</div>
+
+<script>
+const LETRAS = ['A', 'B', 'C', 'D', 'E'];
+let id = localStorage.getItem('trilha_id');
+let estado = null;
+let chaveRenderizada = null;
+let recebidoEm = 0;
+let enviando = false;
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+function conectar() {
+  const es = new EventSource('/eventos?tipo=celular&id=' + encodeURIComponent(id || ''));
+  es.onmessage = ev => {
+    $('#conexao').classList.add('oculto');
+    estado = JSON.parse(ev.data);
+    recebidoEm = Date.now();
+    if (estado.fase === 'entrar' && id) { localStorage.removeItem('trilha_id'); id = null; }
+    render();
+  };
+  es.onerror = () => { $('#conexao').classList.remove('oculto'); };
+  window._es = es;
+}
+
+async function post(url, corpo) {
+  const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corpo) });
+  let d = {};
+  try { d = await r.json(); } catch (e) {}
+  if (!r.ok) throw new Error(d.erro || 'Erro de conexão');
+  return d;
+}
+
+function render() {
+  const e = estado;
+  const t = $('#tela');
+  const logado = e.fase !== 'entrar';
+  $('#topo').classList.toggle('oculto', !logado);
+  $('#rodape').classList.toggle('oculto', !logado);
+  if (logado) {
+    $('#tNome').textContent = e.jogador.nome;
+    $('#tPts').textContent = e.jogador.pontos + ' pts';
+    $('#tPos').textContent = e.jogador.posicao ? e.jogador.posicao + 'º de ' + e.jogador.total : '';
+    $('#bRelogio').textContent = '⏱ ' + e.relogio + ' min';
+    renderCaderno();
+  }
+
+  if (e.fase === 'pergunta') {
+    if (chaveRenderizada === e.pergunta.chave) { atualizarTempo(); return; }
+    chaveRenderizada = e.pergunta.chave;
+    enviando = false;
+    const p = e.pergunta;
+    t.innerHTML = `
+      <div class="local"><span class="selo" style="width:34px;height:34px;font-size:15px">${e.rodada.n}</span>
+        <span><b>${esc(e.rodada.lugar)}</b>${e.rodada.personagem ? ' · ' + esc(e.rodada.personagem) : ''}<br>Rodada ${e.rodada.n} de ${e.rodada.total}</span></div>
+      ${e.parcial ? `<div class="aviso ${e.parcial.ok ? 'ok' : 'nao'}"><b>${esc(e.parcial.titulo)}</b> ${esc(e.parcial.texto)}</div>` : ''}
+      <div class="tempo"><span id="tmpTxt"></span><span>${p.de > 1 ? 'Envelope duplo · questão ' + p.numero + ' de ' + p.de : ''}</span></div>
+      <div class="barra"><div id="tmpBarra"></div></div>
+      <div class="envelope pergunta"><span class="num">PROVA DO CORRETOR · QUESTÃO ${p.qid}</span>${esc(p.texto)}</div>
+      <div id="opcoes">${p.opcoes.map((o, i) => `<button class="opcao" data-k="${i}"><span class="letra">${LETRAS[i]}</span><span>${esc(o)}</span></button>`).join('')}</div>
+      <div class="erro" id="erroResp"></div>`;
+    t.querySelectorAll('.opcao').forEach(b => b.onclick = () => responder(Number(b.dataset.k), b));
+    window.scrollTo(0, 0);
+    atualizarTempo();
+    return;
+  }
+  chaveRenderizada = null;
+
+  if (e.fase === 'entrar') {
+    t.innerHTML = `
+      <div class="entrar">
+        <span class="selo" style="width:72px;height:72px;font-size:34px">C</span>
+        <h1>A Trilha do Corretor</h1>
+        <p class="sub">O professor sumiu. A turma vota em cada questão: a mais votada leva ao próximo envelope.</p>
+        <input id="iNome" maxlength="24" placeholder="Seu nome" autocomplete="off">
+        <button class="btn" id="bEntrar">Entrar na investigação</button>
+        <div class="erro" id="erroEntrar"></div>
+      </div>`;
+    $('#bEntrar').onclick = entrar;
+    $('#iNome').onkeydown = ev => { if (ev.key === 'Enter') entrar(); };
+    return;
+  }
+
+  if (e.fase === 'aguardar') {
+    t.innerHTML = `
+      <div class="cartao grande">
+        <div class="icone">👀</div>
+        <h2>${e.lobby ? 'Você está dentro!' : 'Olhe o telão'}</h2>
+        <p>${e.lobby ? 'Aguarde o professor começar a investigação.' : esc(e.titulo || e.etapaNome)}</p>
+      </div>
+      ${resumoJogador()}`;
+    return;
+  }
+
+  if (e.fase === 'cena') {
+    t.innerHTML = `
+      <div class="local"><span class="selo" style="width:34px;height:34px;font-size:15px">${e.rodada.n}</span>
+        <span><b>${esc(e.rodada.lugar)}</b><br>Rodada ${e.rodada.n} de ${e.rodada.total}</span></div>
+      <div class="cartao" style="font-family:var(--serif);font-size:17px;line-height:1.55">
+        ${e.chegada.map(x => `<p style="margin:0 0 12px">${esc(x)}</p>`).join('')}
+        <div style="display:flex;gap:12px;align-items:center;border-left:3px solid var(--ambar);padding-left:12px;margin-top:6px">
+          ${e.foto ? `<img src="${e.foto}" alt="" style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid var(--ambar)">` : ''}
+          <div>${e.rodada.personagem ? `<div style="font-family:var(--sans);font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--ambar)">${esc(e.rodada.personagem)}</div>` : ''}<i>${esc(e.fala)}</i></div>
+        </div>
+      </div>
+      <p class="sub" style="text-align:center">✉️ A prova abre assim que o professor liberar.</p>`;
+    return;
+  }
+
+  if (e.fase === 'esperando') {
+    const f = e.final;
+    t.innerHTML = `
+      ${f ? cartaoFinal(f) : ''}
+      <div class="cartao grande"><p>Aguardando os votos da turma...</p><p id="tmpTxt" style="font-variant-numeric:tabular-nums"></p></div>`;
+    atualizarTempo();
+    return;
+  }
+
+  if (e.fase === 'resultado') {
+    const f = e.final;
+    const r = e.resultado || {};
+    t.innerHTML = `
+      ${f ? cartaoFinal(f) : ''}
+      <div class="cartao">
+        <h2 style="font-size:18px">Seu voto nesta rodada</h2>
+        <div class="gabarito">
+          ${e.minhas.map(m => `<div class="item">
+            <div class="rot">Questão ${m.qid} · ${m.ok ? '✅ seu voto estava certo' : (m.respondeu ? '❌ seu voto estava errado' : '⏳ você não votou')}</div>
+            ${!m.ok && m.sua ? `<div class="sua">Sua resposta: ${esc(m.sua)}</div>` : ''}
+            <div class="cer">Resposta certa: ${esc(m.certa)}</div>
+            ${m.comentario ? `<div style="color:var(--suave);margin-top:4px">💡 ${esc(m.comentario)}</div>` : ''}
+          </div>`).join('')}
+        </div>
+      </div>
+      ${resumoJogador()}`;
+    return;
+  }
+
+  if (e.fase === 'palpite') {
+    t.innerHTML = `
+      <h2>Quem é o Corretor?</h2>
+      <p class="sub">Releia o caderno de pistas. Palpite certo vale 50 pontos. Você pode mudar até o professor fechar.</p>
+      ${e.suspeitos.map(s => `<button class="suspeito ${e.palpite === s.id ? 'escolhido' : ''}" data-s="${s.id}">${e.palpite === s.id ? '🔴 ' : ''}${esc(s.nome)}</button>`).join('')}
+      <div class="erro" id="erroPalp"></div>`;
+    t.querySelectorAll('.suspeito').forEach(b => b.onclick = async () => {
+      try { await post('/api/palpite', { id, suspeito: b.dataset.s }); }
+      catch (err) { $('#erroPalp').textContent = err.message; }
+    });
+    return;
+  }
+
+  if (e.fase === 'fim') {
+    t.innerHTML = `
+      <div class="cartao grande ${e.finalBom ? 'certo' : 'errado'}">
+        <div class="icone">${e.finalBom ? '🏆' : '🕯️'}</div>
+        <h2>${e.finalBom ? 'O Prof. Henrique foi salvo!' : 'Tarde demais...'}</h2>
+        <p>O Corretor era: <b>${esc(e.culpado)}</b></p>
+        ${e.palpiteCerto === null ? '' : `<p>${e.palpiteCerto ? '✅ Seu palpite estava certo (+50)' : '❌ Seu palpite estava errado'}</p>`}
+      </div>
+      ${resumoJogador()}
+      <a class="btn" href="${e.relatorio}" target="_blank" style="display:block;text-align:center;text-decoration:none">📄 Ver meu relatório</a>
+      <p class="sub" style="text-align:center;margin-top:10px">Mostra o que você errou, a resposta certa e o porquê. Dá para mandar no WhatsApp ou salvar em PDF.</p>`;
+    return;
+  }
+}
+
+function cartaoFinal(f) {
+  const icone = f.tipo === 'votou' ? '🗳️' : (estado.resultado && estado.resultado.turma ? (estado.resultado.turma.ok ? '✉️' : '🚪') : '⏳');
+  const bom = f.tipo === 'votou' || (estado.resultado && estado.resultado.turma && estado.resultado.turma.ok);
+  return `<div class="cartao grande ${bom ? 'certo' : 'errado'}">
+    <div class="icone">${icone}</div><h2>${esc(f.titulo)}</h2><p>${esc(f.texto)}</p></div>`;
+}
+function resumoJogador() {
+  const j = estado.jogador;
+  return `<div class="cartao" style="display:flex;justify-content:space-around;text-align:center">
+    <div><div style="font-size:24px;color:var(--ambar);font-weight:700">${j.pontos}</div><div class="sub" style="margin:0">pontos</div></div>
+    <div><div style="font-size:24px;font-weight:700">${j.posicao || '-'}º</div><div class="sub" style="margin:0">de ${j.total}</div></div>
+    <div><div style="font-size:24px;font-weight:700">${j.acertos}/${j.respondidas}</div><div class="sub" style="margin:0">acertos</div></div>
+  </div>`;
+}
+function renderCaderno() {
+  const c = estado.caderno || [];
+  $('#cadLista').innerHTML = c.length ? c.slice().reverse().map(x => `<div class="fala"><small>Rodada ${x.n} · ${esc(x.lugar)}${x.personagem ? ' · ' + esc(x.personagem) : ''}</small>${esc(x.fala)}</div>`).join('')
+    : '<p class="sub">Ainda vazio. As falas aparecem aqui conforme a trilha avança.</p>';
+}
+
+function atualizarTempo() {
+  if (!estado || estado.restante == null) return;
+  const rest = Math.max(0, estado.restante - (estado.pausado ? 0 : Date.now() - recebidoEm));
+  const s = Math.ceil(rest / 1000);
+  const txt = estado.pausado ? '⏸ Pausado' : `⏳ ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+  const el = $('#tmpTxt'); if (el) el.textContent = txt;
+  const b = $('#tmpBarra');
+  if (b && estado.pergunta) {
+    const total = estado.pergunta.tempoTotal || 100000;
+    b.style.width = Math.min(100, rest / total * 100) + '%';
+  }
+}
+setInterval(atualizarTempo, 500);
+
+async function entrar() {
+  const nome = $('#iNome').value.trim();
+  if (nome.length < 2) { $('#erroEntrar').textContent = 'Digite seu nome.'; return; }
+  $('#bEntrar').disabled = true;
+  try {
+    const d = await post('/api/entrar', { nome });
+    id = d.id;
+    localStorage.setItem('trilha_id', id);
+    if (window._es) window._es.close();
+    conectar();
+  } catch (err) {
+    $('#erroEntrar').textContent = err.message;
+    $('#bEntrar').disabled = false;
+  }
+}
+
+async function responder(k, botao) {
+  if (enviando) return;
+  enviando = true;
+  document.querySelectorAll('.opcao').forEach(b => b.disabled = true);
+  botao.classList.add('escolhida');
+  try {
+    await post('/api/responder', { id, opcao: k, chave: estado.pergunta.chave });
+  } catch (err) {
+    const el = $('#erroResp'); if (el) el.textContent = err.message;
+    if (!/já foi respondida|não está aberta|pausado/.test(err.message)) {
+      enviando = false;
+      document.querySelectorAll('.opcao').forEach(b => b.disabled = false);
+      botao.classList.remove('escolhida');
+    }
+  }
+}
+
+$('#bCaderno').onclick = () => $('#caderno').classList.remove('oculto');
+$('#bFecharCad').onclick = () => $('#caderno').classList.add('oculto');
+$('#bRelogio').onclick = () => alert('Fôlego do professor: ' + (estado ? estado.relogio : '--') + ' minutos.\nCada rodada em que menos da metade da turma acerta tira minutos do relógio.');
+
+// Mantém a tela acesa durante o jogo, quando o navegador permite.
+async function manterTelaAcesa() { try { if ('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch (e) {} }
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') manterTelaAcesa(); });
+manterTelaAcesa();
+
+conectar();
+</script>
+</body>
+</html>

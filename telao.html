@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Telão · A Trilha do Corretor</title>
+<link rel="stylesheet" href="/estilo.css">
+<style>
+  html, body { height: 100%; overflow: hidden; }
+  body { font-size: 1.6vw; }
+  #palco { position: fixed; inset: 0; }
+  .fundo { position: absolute; inset: 0; background-size: cover; background-position: center; transition: opacity .8s; }
+  .fundo.padrao {
+    background:
+      radial-gradient(ellipse at 70% 20%, rgba(214,40,57,.18), transparent 55%),
+      radial-gradient(ellipse at 20% 90%, rgba(60,90,140,.25), transparent 60%),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.015) 0 2px, transparent 2px 80px),
+      linear-gradient(180deg, #0d1018, #07080c);
+  }
+  .fundo.padrao::after {
+    content: attr(data-nome); position: absolute; right: 3vw; bottom: 2vh;
+    font-family: var(--serif); font-size: 9vw; color: rgba(255,255,255,.04); white-space: nowrap;
+  }
+  .veu { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(5,6,10,.92) 0%, rgba(5,6,10,.75) 45%, rgba(5,6,10,.35) 100%); }
+  .veu.forte { background: rgba(5,6,10,.78); }
+  .camada { position: absolute; inset: 0; padding: 4vh 4vw; display: flex; flex-direction: column; }
+
+  .barra-topo { display: flex; align-items: center; gap: 1.2vw; font-size: 1.3vw; color: var(--suave); }
+  .barra-topo .titulo { font-family: var(--serif); color: var(--texto); font-size: 1.6vw; }
+  .barra-topo .esp { flex: 1; }
+  .relogio { display: flex; align-items: center; gap: .8vw; padding: .6vh 1.2vw; border-radius: 99px; background: rgba(0,0,0,.45); border: 1px solid var(--linha); color: var(--texto); }
+  .relogio b { font-size: 2vw; color: var(--ambar); font-variant-numeric: tabular-nums; }
+  .relogio.critico b { color: var(--vermelho); }
+  .relogio.pisca { animation: pisca 0.5s 6; }
+  @keyframes pisca { 50% { background: var(--vermelho); } }
+
+  /* Lobby */
+  .lobby { flex: 1; display: grid; grid-template-columns: 1.1fr 1fr; gap: 4vw; align-items: center; }
+  .lobby h1 { font-family: var(--serif); font-weight: normal; font-size: 5.2vw; margin: 0 0 1vh; line-height: 1; }
+  .lobby .sub { color: var(--suave); font-size: 1.8vw; margin: 0 0 3vh; }
+  .qr-grande { background: #fff; padding: 1vw; border-radius: 1vw; width: 24vw; height: 24vw; }
+  .qr-grande img { width: 100%; height: 100%; display: block; }
+  .endereco { font-family: var(--mono); font-size: 1.5vw; margin-top: 1.5vh; color: var(--papel); }
+  .contagem { font-size: 6vw; font-weight: 800; color: var(--ambar); line-height: 1; }
+  .nomes { display: flex; flex-wrap: wrap; gap: .6vw; margin-top: 2vh; max-height: 55vh; overflow: hidden; }
+  .nomes span { background: rgba(255,255,255,.07); border: 1px solid var(--linha); padding: .5vh 1vw; border-radius: 99px; font-size: 1.3vw; }
+
+  /* Texto */
+  .texto { flex: 1; display: flex; flex-direction: column; justify-content: center; max-width: 62vw; }
+  .texto h1 { font-family: var(--serif); font-weight: normal; font-size: 4.6vw; margin: 0 0 3vh; }
+  .texto p { font-family: var(--serif); font-size: 2.1vw; line-height: 1.45; margin: 0 0 2.2vh; }
+  .texto.longo { max-width: 76vw; }
+  .texto.longo p { font-size: 1.75vw; margin-bottom: 1.6vh; }
+  .texto.longo h1 { font-size: 3.6vw; margin-bottom: 2vh; }
+
+  /* Rodada */
+  .rodada { flex: 1; display: grid; grid-template-columns: 1.15fr 1fr; gap: 3vw; align-items: center; }
+  .lugar { font-family: var(--serif); font-size: 4.4vw; line-height: 1.05; margin: 0 0 1.5vh; }
+  .quem { display: inline-flex; align-items: center; gap: .8vw; font-size: 1.6vw; color: var(--ambar); margin-bottom: 2vh; text-transform: uppercase; letter-spacing: .1vw; }
+  .fala { font-family: var(--serif); font-size: 2.2vw; line-height: 1.4; margin: 0; }
+  .env { padding: 3.5vh 2.5vw 3vh; transform: rotate(-1.2deg); }
+  .env .rot { font-size: 1.1vw; letter-spacing: .2vw; color: var(--vermelho); font-weight: bold; margin-bottom: 1.5vh; }
+  .env .msg { font-size: 1.9vw; line-height: 1.4; }
+  .env .selo { position: absolute; top: -2.2vw; right: 2vw; width: 4.4vw; height: 4.4vw; font-size: 2vw; }
+  .rodape-rodada { display: flex; align-items: flex-end; gap: 3vw; }
+  .cronometro { font-size: 5vw; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; }
+  .cronometro.fim { color: var(--vermelho); }
+  .progresso { flex: 1; }
+  .progresso .txt { font-size: 1.5vw; color: var(--suave); margin-bottom: 1vh; }
+  .progresso .trilho { height: 1.2vh; background: rgba(255,255,255,.1); border-radius: 1vh; overflow: hidden; }
+  .progresso .trilho div { height: 100%; background: var(--verde); transition: width .5s; }
+  .mini-rank { font-size: 1.4vw; color: var(--suave); min-width: 20vw; }
+  .mini-rank div { display: flex; justify-content: space-between; gap: 1vw; }
+  .mini-rank b { color: var(--texto); font-weight: 600; }
+
+  /* Cena de chegada */
+  .chegada { flex: 1; display: flex; flex-direction: column; justify-content: center; max-width: 70vw; }
+  .chegada p { font-family: var(--serif); font-size: 2.15vw; line-height: 1.45; margin: 0 0 2vh; }
+  .chegada .c0, .chegada .c1, .chegada .c2, .chegada .c3 { opacity: 0; animation: surge 1s ease forwards; }
+  .chegada .c0 { animation-delay: .3s; } .chegada .c1 { animation-delay: 2.5s; } .chegada .c2 { animation-delay: 4.8s; } .chegada .c3 { animation-delay: 7s; }
+  .fala-box { display: flex; gap: 1.6vw; align-items: center; margin-top: 2vh; padding: 2vh 1.6vw; background: rgba(0,0,0,.55); border-left: .4vw solid var(--ambar); border-radius: .6vw; }
+  .fala-box .quem { margin-bottom: .8vh; }
+  .fala-box .fala { margin: 0; font-style: italic; }
+  .retrato { width: 9vw; height: 9vw; border-radius: 50%; object-fit: cover; border: .25vw solid var(--ambar); flex: 0 0 auto; }
+  .retrato.vazio { display: grid; place-items: center; background: #1d2330; font-family: var(--serif); font-size: 4vw; color: var(--ambar); }
+  .retrato.mini { width: 3.2vw; height: 3.2vw; border-width: .15vw; vertical-align: middle; }
+  .aviso-cena { font-size: 1.4vw; color: var(--suave); }
+  @keyframes surge { to { opacity: 1; } }
+
+  /* Resultado */
+  .resultado { flex: 1; display: grid; grid-template-columns: 1.2fr 1fr; gap: 3vw; align-items: center; }
+  .res-titulo { font-size: 1.8vw; color: var(--suave); margin: 0 0 1vh; }
+  .res-destino { font-family: var(--serif); font-size: 5.2vw; line-height: 1; margin: 0 0 3vh; }
+  .res-taxa { font-size: 2vw; margin-bottom: 2vh; }
+  .res-taxa b { color: var(--ambar); font-size: 3vw; }
+  .alerta { display: inline-block; padding: 1.2vh 1.5vw; border-radius: .8vw; font-size: 1.8vw; }
+  .alerta.mau { background: rgba(214,40,57,.2); border: 1px solid var(--vermelho); }
+  .alerta.bom { background: rgba(63,179,127,.15); border: 1px solid var(--verde); }
+  .gab { background: rgba(0,0,0,.5); border: 1px solid var(--linha); border-radius: 1vw; padding: 2.5vh 2vw; }
+  .gab h3 { margin: 0 0 1.5vh; font-size: 1.3vw; letter-spacing: .15vw; text-transform: uppercase; color: var(--verde); }
+  .gab p { margin: 0 0 1.5vh; font-size: 1.6vw; line-height: 1.4; }
+  .gab p.porque { font-size: 1.35vw; color: var(--suave); border-left: 3px solid var(--ambar); padding-left: 1vw; }
+
+  .res-destino.errou { color: #ff8a95; }
+  .res-texto { font-family: var(--serif); font-size: 1.9vw; line-height: 1.4; margin: 0 0 3vh; }
+  .votacao { background: rgba(0,0,0,.55); border: 1px solid var(--linha); border-radius: 1vw; padding: 1.8vh 1.4vw; margin-bottom: 1.6vh; }
+  .votacao h3 { margin: 0 0 1.2vh; font-size: 1.15vw; letter-spacing: .1vw; text-transform: uppercase; color: var(--suave); font-weight: 600; }
+  .voto { position: relative; display: flex; align-items: center; gap: .8vw; padding: .9vh .8vw; margin-bottom: .7vh; border-radius: .5vw; background: rgba(255,255,255,.05); overflow: hidden; font-size: 1.15vw; line-height: 1.3; }
+  .voto .vb { position: absolute; left: 0; top: 0; bottom: 0; background: rgba(255,255,255,.12); transition: width 1s ease; }
+  .voto.escolhida .vb { background: rgba(214,40,57,.45); }
+  .voto.certa .vb { background: rgba(63,179,127,.45); }
+  .voto.certa { outline: .15vw solid var(--verde); }
+  .voto > span { position: relative; }
+  .voto .vl { font-weight: 800; width: 1.6vw; }
+  .voto .vt { flex: 1; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .voto .vp { font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .votacao .porque { margin: 1vh 0 0; font-size: 1.15vw; color: var(--suave); line-height: 1.4; }
+
+  .dupla .votacao { padding: 1.2vh 1.2vw; margin-bottom: 1.2vh; }
+  .dupla .voto { padding: .5vh .7vw; margin-bottom: .4vh; font-size: 1vw; }
+  .dupla .voto .vt { -webkit-line-clamp: 1; }
+  .dupla .votacao h3 { font-size: 1vw; margin-bottom: .8vh; }
+  .dupla .votacao .porque { font-size: 1vw; margin-top: .6vh; }
+
+  /* Palpite */
+  .suspeitos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5vw; margin-top: 4vh; }
+  .suspeitos div { padding: 3vh 1.5vw; border: 1px solid var(--linha); background: rgba(0,0,0,.5); border-radius: 1vw; font-family: var(--serif); font-size: 2.4vw; text-align: center; }
+
+  /* Ranking */
+  .rank { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 3vw; align-content: center; }
+  .rank ol { margin: 0; padding: 0; list-style: none; }
+  .rank li { display: flex; align-items: center; gap: 1.2vw; padding: 1.1vh 1vw; border-bottom: 1px solid var(--linha); font-size: 1.9vw; }
+  .rank li .p { width: 3vw; color: var(--suave); }
+  .rank li .n { flex: 1; }
+  .rank li .pt { color: var(--ambar); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .rank li:nth-child(1) .p { color: #ffd166; }
+
+  .qr-canto { position: absolute; right: 2vw; top: 11vh; background: #fff; padding: .5vw; border-radius: .6vw; width: 8vw; height: 8vw; }
+  .qr-canto img { width: 100%; height: 100%; display: block; }
+  .pausa { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 4vw; background: rgba(0,0,0,.8); padding: 2vh 3vw; border-radius: 1vw; border: 1px solid var(--ambar); }
+  /* Gancho: o texto aparece aos poucos, a luz pisca e apaga */
+  .g0, .g1, .g2, .g3, .g4 { opacity: 0; animation: surge 1.2s ease forwards; }
+  .g0, .g5 { opacity: 0; animation: surge 1.2s ease forwards; }
+  .g0 { animation-delay: .3s; } .g1 { animation-delay: 1.8s; } .g2 { animation-delay: 3.6s; } .g3 { animation-delay: 6.2s; } .g4 { animation-delay: 8s; } .g5 { animation-delay: 13s; }
+  .g2 { font-size: 2.6vw !important; color: #ffd9dd; }
+  .continua { position: absolute; left: 0; right: 0; bottom: 14vh; text-align: center; font-family: var(--mono); letter-spacing: .4vw; color: var(--vermelho); font-size: 2.4vw; text-shadow: 0 0 2vw rgba(214,40,57,.6); }
+  @keyframes surge { to { opacity: 1; } }
+  .apagao { position: absolute; inset: 0; background: #000; pointer-events: none; opacity: 0; animation: pisca-luz 3.2s 9.2s forwards; }
+  @keyframes pisca-luz {
+    0% { opacity: 0; } 8% { opacity: .9; } 12% { opacity: 0; } 20% { opacity: .95; } 24% { opacity: .1; }
+    30% { opacity: .97; } 34% { opacity: 0; } 55% { opacity: 1; } 100% { opacity: .88; }
+  }
+  #ativar { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; background: rgba(0,0,0,.85); cursor: pointer; font-size: 2vw; text-align: center; }
+  .anim { animation: entra .7s ease both; }
+  @keyframes entra { from { opacity: 0; transform: translateY(2vh); } to { opacity: 1; transform: none; } }
+</style>
+</head>
+<body>
+<div id="palco"></div>
+<div id="ativar">Clique aqui para ativar o som e a tela cheia<br><small style="color:var(--suave);font-size:1.2vw">(depois é só deixar o telão aberto)</small></div>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+let E = null, recebidoEm = 0, chaveTela = null, relogioAnterior = null, ultimoBip = null, endereco = '';
+let audio = null;
+
+fetch('/endereco').then(r => r.json()).then(d => { endereco = d.url.replace(/^https?:\/\//, '').replace(/\/$/, ''); if (E) render(true); }).catch(() => {});
+
+function som(freq, dur, tipo = 'sine', vol = .15) {
+  if (!audio) return;
+  const o = audio.createOscillator(), g = audio.createGain();
+  o.type = tipo; o.frequency.value = freq;
+  g.gain.setValueAtTime(vol, audio.currentTime);
+  g.gain.exponentialRampToValueAtTime(.0001, audio.currentTime + dur);
+  o.connect(g); g.connect(audio.destination); o.start(); o.stop(audio.currentTime + dur);
+}
+$('#ativar').onclick = () => {
+  try { audio = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+  try { document.documentElement.requestFullscreen(); } catch (e) {}
+  $('#ativar').remove();
+  som(220, .4, 'triangle');
+};
+
+function conectar() {
+  const es = new EventSource('/eventos?tipo=telao');
+  es.onmessage = ev => { E = JSON.parse(ev.data); recebidoEm = Date.now(); render(); };
+}
+
+function fundo(img, nome, forte) {
+  return `<div class="fundo ${img ? '' : 'padrao'}" ${img ? `style="background-image:url('${img}')"` : ''} data-nome="${esc(nome || '')}"></div><div class="veu ${forte ? 'forte' : ''}"></div>`;
+}
+function relogioHtml() {
+  const crit = E.relogio <= 10;
+  return `<div class="relogio ${crit ? 'critico' : ''}" id="relogio">⏱ Fôlego do professor <b>${E.relogio} min</b></div>`;
+}
+function topo(titulo) {
+  return `<div class="barra-topo"><span class="selo" style="width:2.6vw;height:2.6vw;font-size:1.3vw">C</span><span class="titulo">${esc(titulo)}</span><span class="esp"></span>${E.etapa.tipo !== 'lobby' ? relogioHtml() : ''}</div>`;
+}
+function qrCanto() { return E.qr && E.etapa.tipo === 'texto' && E.etapa.chave !== 'gancho' ? `<div class="qr-canto"><img src="/qr.svg" alt=""></div>` : ''; }
+function miniRank() {
+  return `<div class="mini-rank">${E.top.map(j => `<div><span>${j.posicao}º <b>${esc(j.nome)}</b></span><span>${j.pontos}</span></div>`).join('')}</div>`;
+}
+
+function render(forcar) {
+  const e = E;
+  const r = e.rodada;
+  const fr = x => x ? (x.cena ? 'c' : x.aberta ? 'a' : 'f') : '';
+  const chave = [e.etapa.indice, fr(r), e.etapa.tipo === 'lobby' ? e.jogadores + ':' + e.nomes.join(',') : '', e.palpites, e.qr, e.relogio, r && r.pausado, e.etapa.tipo === 'palpite' ? e.jogadores : ''].join('|');
+  if (chave === chaveTela && !forcar) { atualizarVivo(); return; }
+  const nova = chaveTela == null || chaveTela.split('|')[0] !== String(e.etapa.indice) || chaveTela.split('|')[1] !== fr(r);
+  chaveTela = chave;
+  const p = $('#palco');
+  const tipo = e.etapa.tipo;
+
+  if (tipo === 'lobby') {
+    p.innerHTML = `${fundo(null, 'Corretor')}<div class="camada">
+      <div class="lobby">
+        <div>
+          <span class="selo" style="width:5vw;height:5vw;font-size:2.4vw">C</span>
+          <h1>A Trilha do Corretor</h1>
+          <p class="sub">Aponte a câmera do celular para o QR code e digite seu nome.</p>
+          <div class="qr-grande"><img src="/qr.svg" alt="QR code"></div>
+          <div class="endereco">${esc(endereco)}</div>
+        </div>
+        <div>
+          <div class="contagem">${e.jogadores}</div>
+          <div style="font-size:1.8vw;color:var(--suave)">investigadores conectados</div>
+          <div class="nomes">${e.nomes.map(n => `<span>${esc(n)}</span>`).join('')}</div>
+        </div>
+      </div></div>`;
+    return;
+  }
+
+  if (tipo === 'rodada' && r && r.cena) {
+    p.innerHTML = `${fundo(r.img, r.lugar)}<div class="camada ${nova ? 'anim' : ''}">
+      ${topo('Rodada ' + r.n + ' de ' + r.total)}
+      <div class="chegada">
+        <h1 class="lugar">${esc(r.lugar)}</h1>
+        ${r.chegada.map((x, i) => `<p class="c${i}">${esc(x)}</p>`).join('')}
+        <div class="fala-box c${r.chegada.length}">
+          ${r.foto ? `<img class="retrato" src="${r.foto}" alt="">` : (r.personagem ? `<span class="retrato vazio">${esc(r.personagem.split(' ').pop()[0])}</span>` : '')}
+          <div>${r.personagem ? `<div class="quem">${esc(r.personagem)}</div>` : ''}<p class="fala">${esc(r.fala)}</p></div>
+        </div>
+      </div>
+      <div class="aviso-cena">📖 Leiam a cena com atenção · a prova abre em seguida no celular</div>
+    </div>`;
+    if (nova) som(330, .5, 'triangle', .1);
+    return;
+  }
+
+  if (tipo === 'rodada' && r && r.aberta) {
+    p.innerHTML = `${fundo(r.img, r.lugar)}<div class="camada ${nova ? 'anim' : ''}">
+      ${topo('Rodada ' + r.n + ' de ' + r.total)}
+      <div class="rodada">
+        <div>
+          <h1 class="lugar">${esc(r.lugar)}</h1>
+          ${r.personagem ? `<div class="quem">${r.foto ? `<img class="retrato mini" src="${r.foto}" alt="">` : '●'} ${esc(r.personagem)}</div>` : ''}
+          <p class="fala">${esc(r.fala)}</p>
+        </div>
+        <div class="envelope env">
+          <span class="selo">C</span>
+          <div class="rot">ENVELOPE DO CORRETOR${r.nq > 1 ? ' · DUPLO' : ''}</div>
+          <div class="msg">${esc(r.envelope)}</div>
+          <div class="msg" style="margin-top:2vh;font-size:1.4vw;color:#5a4a2c">Votem no celular. A alternativa mais votada decide para onde a turma vai.</div>
+        </div>
+      </div>
+      <div class="rodape-rodada">
+        <div class="cronometro" id="crono">--:--</div>
+        <div class="progresso"><div class="txt" id="progTxt"></div><div class="trilho"><div id="progBar"></div></div></div>
+        <div id="mini">${miniRank()}</div>
+      </div>
+      ${r.pausado ? '<div class="pausa">⏸ Pausado</div>' : ''}
+    </div>${qrCanto()}`;
+    atualizarVivo();
+    return;
+  }
+
+  if (tipo === 'rodada' && r && !r.aberta) {
+    const s = r.resultado || {};
+    const tu = s.turma || { ok: true, titulo: '', texto: '' };
+    const L = ['A', 'B', 'C', 'D'];
+    const blocoVotos = (s.votos || []).map((v, qi) => `
+      <div class="votacao">
+        <h3>${(s.votos.length > 1 ? (qi === 0 ? '1ª questão' : '2ª questão') + ' · ' : '')}Questão ${v.qid} · ${v.total} votos${v.empate ? ' · empate decidido no sorteio' : ''}</h3>
+        ${v.alternativas.map((alt, i) => {
+          const pc = v.total ? Math.round(v.contagem[i] / v.total * 100) : 0;
+          const cls = i === v.correta ? 'certa' : (i === v.vencedora ? 'escolhida' : '');
+          return `<div class="voto ${cls}">
+            <div class="vb" style="width:${pc}%"></div>
+            <span class="vl">${L[i]}</span><span class="vt">${esc(alt)}</span>
+            <span class="vp">${pc}%${i === v.vencedora ? ' ★' : ''}${i === v.correta ? ' ✓' : ''}</span>
+          </div>`;
+        }).join('')}
+        <p class="porque">💡 ${esc((s.explicacoes || [])[qi] || '')}</p>
+      </div>`).join('');
+    p.innerHTML = `${fundo(r.img, r.lugar, true)}<div class="camada ${nova ? 'anim' : ''}">
+      ${topo('Rodada ' + r.n + ' de ' + r.total + ' · apuração')}
+      <div class="resultado">
+        <div>
+          <p class="res-titulo">${s.pulada ? 'Rodada pulada' : (tu.ok ? 'A maioria acertou!' : 'A maioria errou...')}</p>
+          <h1 class="res-destino ${tu.ok ? '' : 'errou'}">${esc(tu.titulo)}</h1>
+          <p class="res-texto">${esc(tu.texto)}</p>
+          ${s.pulada ? '' : (s.perdeu
+            ? `<div class="alerta mau">O Corretor tirou ${s.relogioAntes - s.relogioDepois} minutos do professor: ${s.relogioAntes} → ${s.relogioDepois} min</div>`
+            : `<div class="alerta bom">A turma acertou. O fôlego do professor está mantido.</div>`)}
+          <div style="margin-top:3vh">${miniRank()}</div>
+        </div>
+        <div class="${(s.votos || []).length > 1 ? 'dupla' : ''}">${blocoVotos}</div>
+      </div>
+    </div>${qrCanto()}`;
+    if (nova) { if (s.perdeu) { som(110, .8, 'sawtooth', .12); flashRelogio(); } else som(660, .25); }
+    return;
+  }
+
+  if (tipo === 'palpite') {
+    const t = e.texto;
+    p.innerHTML = `${fundo(t.img, 'Corretor', true)}<div class="camada ${nova ? 'anim' : ''}">
+      ${topo('Palpite')}
+      <div class="texto" style="max-width:none">
+        <h1>${esc(t.titulo)}</h1>
+        <p>${esc(t.paragrafos[0])}</p>
+        <div class="suspeitos">${['Coordenadora Vera', 'Seu Raimundo', 'Diretora Celina', 'Dona Marta', 'Igor', 'Prof. Bruno'].map(n => `<div>${n}</div>`).join('')}</div>
+        <p style="margin-top:4vh;color:var(--ambar)">${e.palpites} de ${e.jogadores} já deram o palpite</p>
+      </div></div>`;
+    return;
+  }
+
+  if (tipo === 'ranking' || tipo === 'final') {
+    const t = e.texto;
+    const metade = Math.ceil(e.top.length / 2);
+    const li = j => `<li><span class="p">${j.posicao}º</span><span class="n">${esc(j.nome)}</span><span class="pt">${j.pontos}</span></li>`;
+    if (tipo === 'final') {
+      p.innerHTML = `${fundo(t.img, t.titulo)}<div class="camada ${nova ? 'anim' : ''}">
+        ${topo(e.finalBom ? 'Final' : 'Final')}
+        <div class="texto"><h1>${esc(t.titulo)}</h1>${t.paragrafos.map(x => `<p>${esc(x)}</p>`).join('')}
+        <p style="color:var(--ambar)">${e.palpiteCertos} investigadores descobriram que o Corretor era a Coordenadora Vera.</p></div>
+      </div>`;
+      if (nova) som(e.finalBom ? 523 : 98, 1.2, e.finalBom ? 'triangle' : 'sawtooth', .15);
+      return;
+    }
+    p.innerHTML = `${fundo(null, 'Ranking', true)}<div class="camada ${nova ? 'anim' : ''}">
+      ${topo('Ranking final')}
+      <div class="rank">
+        <ol>${e.top.slice(0, metade).map(li).join('')}</ol>
+        <ol>${e.top.slice(metade).map(li).join('')}</ol>
+      </div>
+      <p style="font-family:var(--serif);font-size:1.8vw;color:var(--suave);margin:2vh 0 0">${esc(t.paragrafos[0])}</p>
+    </div>`;
+    return;
+  }
+
+  // Textos de história (abertura, gancho, intervalo, volta, revelação)
+  const t = e.texto;
+  const gancho = e.etapa.chave === 'gancho';
+  p.innerHTML = `${fundo(t.img, t.titulo)}<div class="camada ${nova ? 'anim' : ''}">
+    ${topo(e.etapa.nome)}
+    <div class="texto ${t.paragrafos.join('').length > 520 ? 'longo' : ''}">${gancho
+      ? `<h1 class="g0">${esc(t.titulo)}</h1>${t.paragrafos.map((x, i) => `<p class="g${i + 1}">${esc(x)}</p>`).join('')}`
+      : `<h1>${esc(t.titulo)}</h1>${t.paragrafos.map(x => `<p>${esc(x)}</p>`).join('')}`}</div>
+  </div>${gancho ? '<div class="apagao"></div><div class="continua g5">CONTINUA DEPOIS DO INTERVALO</div>' : ''}${qrCanto()}`;
+  if (nova && gancho) trovao();
+  else if (nova) som(140, 1, 'triangle', .12);
+}
+
+function trovao() {
+  if (!audio) return;
+  const dur = 2.5, n = audio.sampleRate * dur;
+  const buf = audio.createBuffer(1, n, audio.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2.5);
+  const src = audio.createBufferSource(); src.buffer = buf;
+  const f = audio.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 400;
+  const g = audio.createGain(); g.gain.value = .9;
+  src.connect(f); f.connect(g); g.connect(audio.destination);
+  setTimeout(() => src.start(), 10000);
+}
+function flashRelogio() {
+  const el = $('#relogio'); if (!el) return;
+  el.classList.remove('pisca'); void el.offsetWidth; el.classList.add('pisca');
+}
+
+function atualizarVivo() {
+  const r = E && E.rodada;
+  if (!r || !r.aberta) return;
+  const rest = Math.max(0, r.restante - (r.pausado ? 0 : Date.now() - recebidoEm));
+  const s = Math.ceil(rest / 1000);
+  const c = $('#crono');
+  if (c) {
+    c.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+    c.classList.toggle('fim', s <= 10);
+  }
+  if (!r.pausado && s <= 10 && s > 0 && ultimoBip !== s) { ultimoBip = s; som(880, .08, 'square', .06); }
+  const t = $('#progTxt'), b = $('#progBar');
+  if (t) t.textContent = `${r.terminaram} de ${r.jogadores} já votaram`;
+  if (b) b.style.width = (r.jogadores ? r.terminaram / r.jogadores * 100 : 0) + '%';
+  const m = $('#mini'); if (m) { const h = miniRank(); if (m._h !== h) { m.innerHTML = h; m._h = h; } }
+}
+setInterval(atualizarVivo, 250);
+conectar();
+</script>
+</body>
+</html>

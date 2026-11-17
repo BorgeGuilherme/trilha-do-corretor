@@ -1,0 +1,14 @@
+{
+  "name": "trilha-do-corretor",
+  "version": "1.0.0",
+  "description": "A Trilha do Corretor - jogo de revisão de Redes e Segurança da Informação (FAMATEC)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "teste": "node teste.js"
+  },
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "qrcode": "^1.5.4"
+  }
+}
