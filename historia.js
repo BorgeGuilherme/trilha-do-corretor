@@ -346,6 +346,16 @@ const textos = {
       'Ela tampa a caneta devagar. "Nota final? Vamos ver."'
     ]
   },
+  revelacaoRuim: {
+    titulo: 'O Corretor', img: 'img-revelacao',
+    texto: [
+      'O cadeado cede com um estalo seco. A porta range... e a casa de máquinas está vazia. Só uma cadeira, cordas cortadas e o cheiro de cera vermelha.',
+      'Atrás da turma, passos. Na porta está a Coordenadora Vera. O casaco seco. O cabelo arrumado. Uma caneta-tinteiro vermelha na mão.',
+      '"Trinta questões, e vocês erraram demais. O professor de vocês já está bem longe daqui."',
+      '"Na Vila Nova também foi assim. Ninguém estuda quando não tem nada em jogo."',
+      'Antes que alguém consiga se mexer, a luz cai de novo.'
+    ]
+  },
   finalBom: {
     titulo: 'Caso encerrado', img: 'img-final-bom',
     texto: [
@@ -358,8 +368,8 @@ const textos = {
   finalRuim: {
     titulo: 'Tarde demais', img: 'img-final-ruim',
     texto: [
-      'A turma chega à casa de máquinas tarde demais. A cadeira está vazia.',
-      'Sobre o assento, uma última prova corrigida em vermelho. Nota: zero. Embaixo, um bilhete: "Na próxima escola, estudem mais."',
+      'Quando a luz volta, a coordenadora sumiu. Ninguém viu por onde ela saiu.',
+      'Sobre a cadeira vazia, uma última prova corrigida em vermelho. Nota: zero. Embaixo, um bilhete: "Na próxima escola, estudem mais."',
       'A Coordenadora Vera nunca mais foi vista. Dizem que uma escola da cidade vizinha acabou de contratar uma coordenadora nova.'
     ]
   },

@@ -15,7 +15,7 @@ const relatorio = require('./relatorio');
 const PORT = process.env.PORT || 3000;
 const SENHA = process.env.SENHA || 'fama2026';
 const TEMPO_QUESTAO = Number(process.env.TEMPO_QUESTAO || 100); // segundos por questão
-const RELOGIO_INICIAL = Number(process.env.RELOGIO_INICIAL || 45); // minutos de fôlego do professor
+const RELOGIO_INICIAL = Number(process.env.RELOGIO_INICIAL || 75); // minutos de fôlego do professor
 const PENALIDADE = Number(process.env.PENALIDADE || 5); // minutos perdidos por rodada ruim
 const PONTOS_PALPITE = 50;
 const DIR = __dirname;
@@ -372,7 +372,7 @@ function cadernoAte() {
   }));
 }
 function textoEtapa(e) {
-  if (e.tipo === 'texto') return textos[e.chave];
+  if (e.tipo === 'texto') return e.chave === 'revelacao' && estado.relogio <= 0 ? textos.revelacaoRuim : textos[e.chave];
   if (e.tipo === 'palpite') return textos.palpite;
   if (e.tipo === 'final') return estado.finalBom ? textos.finalBom : textos.finalRuim;
   if (e.tipo === 'ranking') return textos.encerramento;

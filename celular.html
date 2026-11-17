@@ -343,7 +343,7 @@ async function responder(k, botao) {
 
 $('#bCaderno').onclick = () => $('#caderno').classList.remove('oculto');
 $('#bFecharCad').onclick = () => $('#caderno').classList.add('oculto');
-$('#bRelogio').onclick = () => alert('Fôlego do professor: ' + (estado ? estado.relogio : '--') + ' minutos.\nCada rodada em que menos da metade da turma acerta tira minutos do relógio.');
+$('#bRelogio').onclick = () => alert('Fôlego do professor: ' + (estado ? estado.relogio : '--') + ' minutos.\nCada erro da turma custa tempo. Se o fôlego acabar, o Corretor vence.');
 
 // Mantém a tela acesa durante o jogo, quando o navegador permite.
 async function manterTelaAcesa() { try { if ('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch (e) {} }

@@ -26,7 +26,7 @@ Jogo de revisão para a Avaliação Unificada de Redes e Segurança da Informaç
 - A rodada fecha sozinha quando todos respondem ou quando o tempo acaba (100 s por questão).
 - Durante a rodada, você pode **pausar**, dar **+30 s** ou **pular**.
 - **Votação:** cada aluno vota no celular. A alternativa mais votada é a escolha da turma (empate é decidido no sorteio). Se a maioria acertar, a turma corre para o lugar certo. Se errar, corre para um lugar errado e perde tempo. O voto de cada um vale para os pontos individuais e para o relatório.
-- **Fôlego do professor:** começa em 45 min. Cada questão em que a maioria erra tira 5 min. Se zerar, o final é ruim. Os botões −5 e +5 ajustam o relógio na mão.
+- **Fôlego do professor:** começa em 75 min. Cada questão em que a maioria erra tira 5 min. Se a turma errar 15 das 30 questões, o fôlego zera e o final é ruim. Os botões −5 e +5 ajustam o relógio na mão.
 - **Ir para uma etapa:** serve para pular para qualquer ponto da história, por exemplo para a volta do intervalo.
 
 ## Relatórios
